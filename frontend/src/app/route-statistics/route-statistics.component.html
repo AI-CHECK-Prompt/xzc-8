@@ -1,0 +1,94 @@
+
+<div class="route-statistics">
+  <h2>路线执行统计</h2>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total">📋</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics?.totalTasks || 0 }}</span>
+        <span class="stat-label">总任务数</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon completed">✅</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics?.completedTasks || 0 }}</span>
+        <span class="stat-label">已完成</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon progress">🔄</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics?.inProgressTasks || 0 }}</span>
+        <span class="stat-label">进行中</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pending">⏳</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics?.pendingTasks || 0 }}</span>
+        <span class="stat-label">待执行</span>
+      </div>
+    </div>
+    <div class="stat-card highlight">
+      <div class="stat-icon saved">💰</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics?.totalSavedDistance || 0 }}m</span>
+        <span class="stat-label">累计节省路程</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon rate">📈</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getCompletionRate() }}%</span>
+        <span class="stat-label">完成率</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="charts-row">
+    <div class="chart-container">
+      <div #taskChart class="chart"></div>
+    </div>
+    <div class="chart-container">
+      <div #distanceChart class="chart"></div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h3>任务执行详情</h3>
+    <table class="tasks-table">
+      <thead>
+        <tr>
+          <th>任务编号</th>
+          <th>路线</th>
+          <th>负责人</th>
+          <th>状态</th>
+          <th>已走路程</th>
+          <th>节省路程</th>
+          <th>进度</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of tasks">
+          <td>{{ task.taskCode }}</td>
+          <td>{{ task.routeName }}</td>
+          <td>{{ task.assignee }}</td>
+          <td>
+            <span class="status-badge" [style.backgroundColor]="getStatusColor(task.status)">
+              {{ getStatusText(task.status) }}
+            </span>
+          </td>
+          <td>{{ task.traveledDistance }}m</td>
+          <td>{{ task.savedDistance }}m</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="task.totalPoints > 0 ? (task.completedPoints / task.totalPoints * 100) + '%' : '0%'"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

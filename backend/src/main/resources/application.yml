@@ -1,4 +1,3 @@
-
 server:
   port: 8080
 
@@ -8,12 +7,6 @@ spring:
     username: root
     password: password
     driver-class-name: com.mysql.cj.jdbc.Driver
-  
-  data:
-    elasticsearch:
-      repositories:
-        enabled: true
-      cluster-nodes: localhost:9200
 
 mybatis-plus:
   configuration:

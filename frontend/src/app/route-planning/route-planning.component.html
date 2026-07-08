@@ -1,0 +1,138 @@
+
+<div class="route-planning">
+  <h2>巡检路线规划</h2>
+  
+  <div class="section">
+    <h3>创建路线</h3>
+    <div class="form-group">
+      <label>路线名称</label>
+      <input type="text" [(ngModel)]="routeName" placeholder="输入路线名称">
+    </div>
+    <div class="form-group">
+      <label>起点监控点</label>
+      <select [(ngModel)]="selectedStartPoint">
+        <option value="">请选择起点</option>
+        <option *ngFor="let point of points" [value]="point.pointCode">{{ point.pointName }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>选择监控点（可多选）</label>
+      <div class="point-grid">
+        <div *ngFor="let point of points" 
+             class="point-card" 
+             [class.selected]="selectedPoints.includes(point.pointCode)"
+             (click)="togglePoint(point.pointCode)">
+          <span>{{ point.pointName }}</span>
+          <span class="point-code">{{ point.pointCode }}</span>
+        </div>
+      </div>
+    </div>
+    <button class="create-btn" (click)="createRoute()" [disabled]="selectedPoints.length === 0 || !routeName || !selectedStartPoint">
+      创建路线（已选 {{ selectedPoints.length }} 个监控点）
+    </button>
+  </div>
+  
+  <div class="section">
+    <h3>路线列表</h3>
+    <div class="route-list">
+      <div *ngFor="let route of routes" 
+           class="route-card" 
+           [class.selected]="selectedRoute?.id === route.id"
+           (click)="selectRoute(route)">
+        <div class="route-header">
+          <span class="route-name">{{ route.routeName }}</span>
+          <button class="delete-btn" (click)="$event.stopPropagation(); deleteRoute(route.id)">删除</button>
+        </div>
+        <div class="route-info">
+          <span>总点数: {{ route.totalPoints }}</span>
+          <span>总距离: {{ route.totalDistance }}m</span>
+          <span>预计时间: {{ route.estimatedTime }}分钟</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="selectedRoute" class="section">
+    <h3>{{ selectedRoute.routeName }} - 路线详情</h3>
+    <div class="route-detail">
+      <div class="route-stats">
+        <div class="stat-item">
+          <span class="stat-label">起点</span>
+          <span class="stat-value">{{ selectedRoute.startPointCode }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">终点</span>
+          <span class="stat-value">{{ selectedRoute.endPointCode }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">总距离</span>
+          <span class="stat-value">{{ selectedRoute.totalDistance }}m</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">预计时间</span>
+          <span class="stat-value">{{ selectedRoute.estimatedTime }}分钟</span>
+        </div>
+      </div>
+      
+      <div class="route-points">
+        <h4>巡检顺序</h4>
+        <div *ngFor="let point of routePoints" class="route-point-item">
+          <span class="sequence">{{ point.sequence }}</span>
+          <div class="point-info">
+            <span class="point-name">{{ point.pointName }}</span>
+            <span class="distance">距前: {{ point.distanceFromPrev ? point.distanceFromPrev.toFixed(1) : 0 }}m</span>
+          </div>
+          <span class="cumulative">累计: {{ point.cumulativeDistance.toFixed(1) }}m</span>
+        </div>
+      </div>
+      
+      <div class="create-task">
+        <h4>创建巡检任务</h4>
+        <div class="form-row">
+          <input type="text" [(ngModel)]="newTaskAssignee" placeholder="负责人">
+          <input type="datetime-local" [(ngModel)]="newTaskStartTime">
+          <input type="datetime-local" [(ngModel)]="newTaskEndTime">
+        </div>
+        <button class="task-btn" (click)="createTask()" [disabled]="!newTaskAssignee">创建任务</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h3>巡检任务列表</h3>
+    <table class="tasks-table">
+      <thead>
+        <tr>
+          <th>任务编号</th>
+          <th>路线</th>
+          <th>负责人</th>
+          <th>进度</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of tasks">
+          <td>{{ task.taskCode }}</td>
+          <td>{{ task.routeName }}</td>
+          <td>{{ task.assignee }}</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="getProgress(task) + '%'"></div>
+            </div>
+            <span>{{ task.completedPoints }}/{{ task.totalPoints }}</span>
+          </td>
+          <td>
+            <span class="status-badge" [style.backgroundColor]="getStatusColor(task.status)">
+              {{ getStatusText(task.status) }}
+            </span>
+          </td>
+          <td>
+            <button *ngIf="task.status === 'PENDING'" (click)="startTask(task)">开始</button>
+            <button *ngIf="task.status === 'IN_PROGRESS'" (click)="completeTask(task)">完成</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

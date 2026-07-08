@@ -62,3 +62,58 @@ CREATE TABLE IF NOT EXISTS alarm_record (
     INDEX idx_status (status),
     INDEX idx_trigger_time (trigger_time)
 );
+
+CREATE TABLE IF NOT EXISTS route (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    route_name VARCHAR(100) NOT NULL,
+    route_code VARCHAR(50) NOT NULL UNIQUE,
+    total_points INT DEFAULT 0,
+    total_distance DOUBLE DEFAULT 0,
+    estimated_time INT DEFAULT 0,
+    start_point_code VARCHAR(50),
+    end_point_code VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'ACTIVE',
+    description TEXT,
+    creator VARCHAR(50),
+    create_time DATETIME,
+    update_time DATETIME,
+    INDEX idx_route_code (route_code)
+);
+
+CREATE TABLE IF NOT EXISTS route_point (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    route_id BIGINT,
+    route_code VARCHAR(50) NOT NULL,
+    point_id BIGINT,
+    point_code VARCHAR(50) NOT NULL,
+    point_name VARCHAR(100),
+    sequence INT NOT NULL,
+    distance_from_prev DOUBLE DEFAULT 0,
+    cumulative_distance DOUBLE DEFAULT 0,
+    create_time DATETIME,
+    INDEX idx_route_code (route_code),
+    INDEX idx_point_code (point_code)
+);
+
+CREATE TABLE IF NOT EXISTS inspection_task (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    task_code VARCHAR(50) NOT NULL UNIQUE,
+    route_id BIGINT,
+    route_code VARCHAR(50),
+    route_name VARCHAR(100),
+    assignee VARCHAR(50) NOT NULL,
+    status VARCHAR(20) DEFAULT 'PENDING',
+    scheduled_start_time DATETIME,
+    scheduled_end_time DATETIME,
+    actual_start_time DATETIME,
+    actual_end_time DATETIME,
+    completed_points INT DEFAULT 0,
+    total_points INT DEFAULT 0,
+    traveled_distance DOUBLE DEFAULT 0,
+    saved_distance DOUBLE DEFAULT 0,
+    remarks TEXT,
+    create_time DATETIME,
+    update_time DATETIME,
+    INDEX idx_task_code (task_code),
+    INDEX idx_status (status)
+);

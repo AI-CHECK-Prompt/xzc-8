@@ -1,0 +1,325 @@
+
+.route-planning {
+  color: #fff;
+}
+
+.section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  
+  h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+}
+
+.form-group {
+  margin-bottom: 16px;
+  
+  label {
+    display: block;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    
+    &:focus {
+      outline: none;
+      border-color: #00d4ff;
+    }
+    
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.point-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.point-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  &.selected {
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+  }
+  
+  .point-code {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+  }
+}
+
+.create-btn, .task-btn {
+  padding: 12px 24px;
+  background: #52c41a;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:hover {
+    background: #43a817;
+  }
+  
+  &[disabled] {
+    background: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+  }
+}
+
+.route-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.route-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  &.selected {
+    border-color: #00d4ff;
+  }
+}
+
+.route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  
+  .route-name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.delete-btn {
+  padding: 4px 8px;
+  background: rgba(255, 77, 79, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: #ff4d4f;
+  font-size: 12px;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(255, 77, 79, 0.3);
+  }
+}
+
+.route-info {
+  display: flex;
+  gap: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.route-detail {
+  margin-top: 16px;
+}
+
+.route-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  
+  .stat-label {
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  
+  .stat-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #00d4ff;
+  }
+}
+
+.route-points {
+  margin-bottom: 20px;
+  
+  h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.route-point-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  
+  .sequence {
+    width: 32px;
+    height: 32px;
+    background: #00d4ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-right: 12px;
+  }
+  
+  .point-info {
+    flex: 1;
+    
+    .point-name {
+      display: block;
+      font-size: 14px;
+    }
+    
+    .distance {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+  
+  .cumulative {
+    font-size: 12px;
+    color: #00d4ff;
+  }
+}
+
+.create-task {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  
+  h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  
+  input {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+  }
+}
+
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  th {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  td {
+    font-size: 14px;
+  }
+}
+
+.progress-bar {
+  width: 120px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #00d4ff;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 500;
+}
+
+td button {
+  padding: 6px 12px;
+  background: #1890ff;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  
+  &:hover {
+    background: #096dd9;
+  }
+}

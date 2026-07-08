@@ -1,4 +1,3 @@
-
 package com.mine.safety.service.impl;
 
 import com.mine.safety.entity.AlarmRecord;
@@ -50,14 +49,20 @@ public class AlarmEngineServiceImpl implements AlarmEngineService {
     }
     
     private boolean matchCondition(Double value, String compareType, Double threshold) {
-        return switch (compareType) {
-            case "GT" -> value > threshold;
-            case "LT" -> value < threshold;
-            case "GE" -> value >= threshold;
-            case "LE" -> value <= threshold;
-            case "EQ" -> value.equals(threshold);
-            default -> false;
-        };
+        switch (compareType) {
+            case "GT":
+                return value > threshold;
+            case "LT":
+                return value < threshold;
+            case "GE":
+                return value >= threshold;
+            case "LE":
+                return value <= threshold;
+            case "EQ":
+                return value.equals(threshold);
+            default:
+                return false;
+        }
     }
     
     private void triggerAlarm(SensorData data, AlarmRule rule) {
@@ -83,14 +88,26 @@ public class AlarmEngineServiceImpl implements AlarmEngineService {
     }
     
     private String buildAlarmMessage(SensorData data, AlarmRule rule) {
-        String compareText = switch (rule.getCompareType()) {
-            case "GT" -> "大于";
-            case "LT" -> "小于";
-            case "GE" -> "大于等于";
-            case "LE" -> "小于等于";
-            case "EQ" -> "等于";
-            default -> "未知";
-        };
+        String compareText;
+        switch (rule.getCompareType()) {
+            case "GT":
+                compareText = "大于";
+                break;
+            case "LT":
+                compareText = "小于";
+                break;
+            case "GE":
+                compareText = "大于等于";
+                break;
+            case "LE":
+                compareText = "小于等于";
+                break;
+            case "EQ":
+                compareText = "等于";
+                break;
+            default:
+                compareText = "未知";
+        }
         return String.format("%s %s %s%s (阈值: %s%s)", 
                             data.getDataType(), compareText, 
                             data.getValue(), data.getUnit(),

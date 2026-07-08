@@ -63,6 +63,65 @@ export interface AlarmRecord {
   createTime: string;
 }
 
+export interface Route {
+  id: number;
+  routeName: string;
+  routeCode: string;
+  totalPoints: number;
+  totalDistance: number;
+  estimatedTime: number;
+  startPointCode: string;
+  endPointCode: string;
+  status: string;
+  description: string;
+  creator: string;
+  createTime: string;
+  updateTime: string;
+}
+
+export interface RoutePoint {
+  id: number;
+  routeId: number;
+  routeCode: string;
+  pointId: number;
+  pointCode: string;
+  pointName: string;
+  sequence: number;
+  distanceFromPrev: number;
+  cumulativeDistance: number;
+  createTime: string;
+}
+
+export interface InspectionTask {
+  id: number;
+  taskCode: string;
+  routeId: number;
+  routeCode: string;
+  routeName: string;
+  assignee: string;
+  status: string;
+  scheduledStartTime: string;
+  scheduledEndTime: string;
+  actualStartTime: string;
+  actualEndTime: string;
+  completedPoints: number;
+  totalPoints: number;
+  traveledDistance: number;
+  savedDistance: number;
+  remarks: string;
+  createTime: string;
+  updateTime: string;
+}
+
+export interface TaskStatistics {
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  pendingTasks: number;
+  totalSavedDistance: number;
+  avgSavedDistance: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   constructor(private http: HttpClient) {}
@@ -145,5 +204,65 @@ export class ApiService {
 
   handleAlarm(id: number, user: string, result: string): Observable<AlarmRecord> {
     return this.http.put<AlarmRecord>(`${BASE_URL}/alarm/records/${id}/handle`, { user, result });
+  }
+
+  getRoutes(): Observable<Route[]> {
+    return this.http.get<Route[]>(`${BASE_URL}/route`);
+  }
+
+  getRouteById(id: number): Observable<Route> {
+    return this.http.get<Route>(`${BASE_URL}/route/${id}`);
+  }
+
+  getRoutePoints(routeId: number): Observable<RoutePoint[]> {
+    return this.http.get<RoutePoint[]>(`${BASE_URL}/route/${routeId}/points`);
+  }
+
+  createRoute(routeName: string, pointCodes: string[], startPointCode: string): Observable<Route> {
+    return this.http.post<Route>(`${BASE_URL}/route`, { routeName, pointCodes, startPointCode });
+  }
+
+  updateRoute(id: number, routeName: string, pointCodes: string[]): Observable<Route> {
+    return this.http.put<Route>(`${BASE_URL}/route/${id}`, { routeName, pointCodes });
+  }
+
+  deleteRoute(id: number): Observable<void> {
+    return this.http.delete<void>(`${BASE_URL}/route/${id}`);
+  }
+
+  getTasks(): Observable<InspectionTask[]> {
+    return this.http.get<InspectionTask[]>(`${BASE_URL}/task`);
+  }
+
+  getTaskById(id: number): Observable<InspectionTask> {
+    return this.http.get<InspectionTask>(`${BASE_URL}/task/${id}`);
+  }
+
+  getTaskRoutePoints(taskId: number): Observable<RoutePoint[]> {
+    return this.http.get<RoutePoint[]>(`${BASE_URL}/task/${taskId}/route-points`);
+  }
+
+  getTasksByStatus(status: string): Observable<InspectionTask[]> {
+    return this.http.get<InspectionTask[]>(`${BASE_URL}/task/status/${status}`);
+  }
+
+  createTask(routeId: number, assignee: string, scheduledStartTime: string, scheduledEndTime: string): Observable<InspectionTask> {
+    return this.http.post<InspectionTask>(`${BASE_URL}/task`, { routeId, assignee, scheduledStartTime, scheduledEndTime });
+  }
+
+  startTask(id: number): Observable<InspectionTask> {
+    return this.http.put<InspectionTask>(`${BASE_URL}/task/${id}/start`, {});
+  }
+
+  completeTask(id: number): Observable<InspectionTask> {
+    return this.http.put<InspectionTask>(`${BASE_URL}/task/${id}/complete`, {});
+  }
+
+  updateTaskProgress(id: number, completedPoints: number, traveledDistance: number): Observable<InspectionTask> {
+    return this.http.put<InspectionTask>(`${BASE_URL}/task/${id}/progress`, { completedPoints, traveledDistance });
+  }
+
+  getTaskStatistics(): Observable<TaskStatistics> {
+    return this.http.get<TaskStatistics>(`${BASE_URL}/task/statistics`);
   }
 }

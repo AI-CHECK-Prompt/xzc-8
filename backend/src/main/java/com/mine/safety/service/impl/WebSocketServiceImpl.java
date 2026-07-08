@@ -1,4 +1,3 @@
-
 package com.mine.safety.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +11,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,10 +36,9 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void sendSensorData(SensorData data) {
         try {
-            Map<String, Object> message = Map.of(
-                "type", "sensorData",
-                "data", data
-            );
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "sensorData");
+            message.put("data", data);
             broadcast(message);
         } catch (Exception e) {
             logger.error("发送传感器数据失败", e);
@@ -49,10 +48,9 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void sendAlarm(AlarmRecord record) {
         try {
-            Map<String, Object> message = Map.of(
-                "type", "alarm",
-                "data", record
-            );
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "alarm");
+            message.put("data", record);
             broadcast(message);
         } catch (Exception e) {
             logger.error("发送告警数据失败", e);
@@ -62,10 +60,13 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void sendPointStatus(String pointCode, String status) {
         try {
-            Map<String, Object> message = Map.of(
-                "type", "pointStatus",
-                "data", Map.of("pointCode", pointCode, "status", status)
-            );
+            Map<String, Object> innerData = new HashMap<>();
+            innerData.put("pointCode", pointCode);
+            innerData.put("status", status);
+            
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "pointStatus");
+            message.put("data", innerData);
             broadcast(message);
         } catch (Exception e) {
             logger.error("发送监控点状态失败", e);
