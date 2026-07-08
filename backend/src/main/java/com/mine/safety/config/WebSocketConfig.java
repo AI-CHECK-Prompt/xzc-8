@@ -8,7 +8,7 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.UUID;
+
 
 @Configuration
 @EnableWebSocket
@@ -25,7 +25,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         registry.addHandler(new TextWebSocketHandler() {
             @Override
             public void afterConnectionEstablished(org.springframework.web.socket.WebSocketSession session) {
-                String sessionId = UUID.randomUUID().toString();
+                String sessionId = session.getId();
                 webSocketService.registerSession(sessionId, session);
             }
             

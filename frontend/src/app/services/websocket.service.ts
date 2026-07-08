@@ -5,16 +5,22 @@ import { SensorData, AlarmRecord } from './api.service';
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
   private ws: WebSocket | null = null;
+  private shouldReconnect = false;
+  private reconnectTimerId: ReturnType<typeof setTimeout> | null = null;
   
   sensorDataReceived = new EventEmitter<SensorData>();
   alarmReceived = new EventEmitter<AlarmRecord>();
   pointStatusChanged = new EventEmitter<{ pointCode: string; status: string }>();
 
   connect() {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      return;
+    if (this.ws) {
+      if (this.ws.readyState === WebSocket.OPEN) {
+        return;
+      }
+      this.cleanup();
     }
     
+    this.shouldReconnect = true;
     this.ws = new WebSocket('ws://localhost:8080/ws/safety');
     
     this.ws.onopen = () => {
@@ -45,13 +51,28 @@ export class WebSocketService {
     };
     
     this.ws.onclose = () => {
-      console.log('WebSocket disconnected, reconnecting...');
-      setTimeout(() => this.connect(), 5000);
+      console.log('WebSocket disconnected');
+      if (this.shouldReconnect) {
+        this.reconnectTimerId = setTimeout(() => this.connect(), 5000);
+      }
     };
   }
 
   disconnect() {
+    this.shouldReconnect = false;
+    if (this.reconnectTimerId) {
+      clearTimeout(this.reconnectTimerId);
+      this.reconnectTimerId = null;
+    }
+    this.cleanup();
+  }
+
+  private cleanup() {
     if (this.ws) {
+      this.ws.onopen = null;
+      this.ws.onmessage = null;
+      this.ws.onerror = null;
+      this.ws.onclose = null;
       this.ws.close();
       this.ws = null;
     }
