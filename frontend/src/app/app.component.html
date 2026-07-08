@@ -1,0 +1,17 @@
+
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title }}</h1>
+    <nav class="app-nav">
+      <button [class.active]="currentTab === 'dashboard'" (click)="switchTab('dashboard')">安全监控大屏</button>
+      <button [class.active]="currentTab === 'points'" (click)="switchTab('points')">监控点管理</button>
+      <button [class.active]="currentTab === 'alarms'" (click)="switchTab('alarms')">告警记录</button>
+    </nav>
+  </header>
+  
+  <main class="app-main">
+    <app-dashboard *ngIf="currentTab === 'dashboard'"></app-dashboard>
+    <app-monitoring-point-list *ngIf="currentTab === 'points'"></app-monitoring-point-list>
+    <app-alarm-list *ngIf="currentTab === 'alarms'"></app-alarm-list>
+  </main>
+</div>

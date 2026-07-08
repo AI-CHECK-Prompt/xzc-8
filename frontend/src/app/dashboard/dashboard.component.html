@@ -1,0 +1,51 @@
+
+<div class="dashboard">
+  <div class="points-grid">
+    <div *ngFor="let point of points" class="point-card" [style.borderColor]="getStatusColor(point.status)">
+      <div class="point-header">
+        <span class="point-name">{{ point.pointName }}</span>
+        <span class="status-badge" [style.backgroundColor]="getStatusColor(point.status)">
+          {{ getStatusText(point.status) }}
+        </span>
+      </div>
+      <div class="point-info">
+        <p><strong>位置:</strong> {{ point.location }}</p>
+        <p><strong>设备:</strong> {{ point.deviceType }}</p>
+        <p><strong>IP:</strong> {{ point.ipAddress }}</p>
+      </div>
+      <div class="point-value">
+        <span class="value-label">当前值</span>
+        <span class="value">{{ getLatestValue(point.pointCode) }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="charts-row">
+    <div class="chart-container">
+      <div #gasChart class="chart"></div>
+    </div>
+    <div class="chart-container">
+      <div #tempChart class="chart"></div>
+    </div>
+    <div class="chart-container">
+      <div #alarmChart class="chart"></div>
+    </div>
+  </div>
+  
+  <div class="recent-alarms">
+    <h3>最新告警</h3>
+    <div *ngIf="recentAlarms.length === 0" class="empty-state">暂无告警记录</div>
+    <div *ngFor="let alarm of recentAlarms" class="alarm-item" [style.borderLeftColor]="alarm.alarmLevel === 'DANGER' ? '#ff4d4f' : '#faad14'">
+      <div class="alarm-header">
+        <span class="alarm-level" [style.backgroundColor]="alarm.alarmLevel === 'DANGER' ? '#ff4d4f' : '#faad14'">
+          {{ alarm.alarmLevel === 'DANGER' ? '危险' : '预警' }}
+        </span>
+        <span class="alarm-time">{{ alarm.triggerTime }}</span>
+      </div>
+      <div class="alarm-content">
+        <strong>{{ alarm.pointName }}</strong>
+        <p>{{ alarm.alarmMessage }}</p>
+      </div>
+    </div>
+  </div>
+</div>

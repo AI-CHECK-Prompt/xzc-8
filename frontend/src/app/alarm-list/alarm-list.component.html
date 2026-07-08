@@ -1,0 +1,61 @@
+
+<div class="alarm-list-container">
+  <h2>告警记录</h2>
+  
+  <div *ngIf="selectedAlarm" class="handle-modal">
+    <div class="modal-content">
+      <h3>处理告警</h3>
+      <div class="alarm-detail">
+        <p><strong>监控点:</strong> {{ selectedAlarm.pointName }}</p>
+        <p><strong>告警级别:</strong> <span [style.color]="getLevelColor(selectedAlarm.alarmLevel)">{{ getLevelText(selectedAlarm.alarmLevel) }}</span></p>
+        <p><strong>告警信息:</strong> {{ selectedAlarm.alarmMessage }}</p>
+      </div>
+      <div class="form-group">
+        <label>处理结果</label>
+        <textarea [(ngModel)]="handleResult" rows="3" placeholder="请输入处理结果..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="confirm-btn" (click)="confirmHandle()">确认处理</button>
+        <button class="cancel-btn" (click)="selectedAlarm = null">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <table class="alarm-table">
+    <thead>
+      <tr>
+        <th>监控点</th>
+        <th>数据类型</th>
+        <th>当前值</th>
+        <th>告警级别</th>
+        <th>状态</th>
+        <th>触发时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let alarm of alarms" [style.borderLeftColor]="getLevelColor(alarm.alarmLevel)">
+        <td>{{ alarm.pointName }}</td>
+        <td>{{ alarm.dataType }}</td>
+        <td>{{ alarm.currentValue }}{{ alarm.unit }}</td>
+        <td>
+          <span class="level-badge" [style.backgroundColor]="getLevelColor(alarm.alarmLevel)">
+            {{ getLevelText(alarm.alarmLevel) }}
+          </span>
+        </td>
+        <td>
+          <span class="status-badge" [style.backgroundColor]="alarm.status === 'HANDLED' ? '#52c41a' : '#ff4d4f'">
+            {{ getStatusText(alarm.status) }}
+          </span>
+        </td>
+        <td>{{ alarm.triggerTime }}</td>
+        <td>
+          <button *ngIf="alarm.status !== 'HANDLED'" class="handle-btn" (click)="handleAlarmRecord(alarm)">处理</button>
+          <span *ngIf="alarm.status === 'HANDLED'" class="handled-text">已处理</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div *ngIf="alarms.length === 0" class="empty-state">暂无告警记录</div>
+</div>

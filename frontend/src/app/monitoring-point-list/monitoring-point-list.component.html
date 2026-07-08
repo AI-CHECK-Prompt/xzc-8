@@ -1,0 +1,95 @@
+
+<div class="point-list-container">
+  <div class="list-header">
+    <h2>监控点管理</h2>
+    <button class="add-btn" (click)="addPoint()">添加监控点</button>
+  </div>
+  
+  <div *ngIf="isEditing" class="edit-form">
+    <h3>{{ selectedPoint ? '编辑监控点' : '添加监控点' }}</h3>
+    <form (ngSubmit)="savePoint()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>监控点编码</label>
+          <input type="text" [(ngModel)]="newPoint.pointCode" name="pointCode" required>
+        </div>
+        <div class="form-group">
+          <label>监控点名称</label>
+          <input type="text" [(ngModel)]="newPoint.pointName" name="pointName" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>位置</label>
+          <input type="text" [(ngModel)]="newPoint.location" name="location">
+        </div>
+        <div class="form-group">
+          <label>设备类型</label>
+          <select [(ngModel)]="newPoint.deviceType" name="deviceType">
+            <option value="瓦斯传感器">瓦斯传感器</option>
+            <option value="温度传感器">温度传感器</option>
+            <option value="湿度传感器">湿度传感器</option>
+            <option value="风速传感器">风速传感器</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>设备编码</label>
+          <input type="text" [(ngModel)]="newPoint.deviceCode" name="deviceCode">
+        </div>
+        <div class="form-group">
+          <label>IP地址</label>
+          <input type="text" [(ngModel)]="newPoint.ipAddress" name="ipAddress">
+        </div>
+        <div class="form-group">
+          <label>端口</label>
+          <input type="number" [(ngModel)]="newPoint.port" name="port">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>描述</label>
+        <textarea [(ngModel)]="newPoint.description" name="description" rows="3"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="save-btn">保存</button>
+        <button type="button" class="cancel-btn" (click)="cancelEdit()">取消</button>
+      </div>
+    </form>
+  </div>
+  
+  <table class="points-table">
+    <thead>
+      <tr>
+        <th>编码</th>
+        <th>名称</th>
+        <th>位置</th>
+        <th>设备类型</th>
+        <th>IP地址</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let point of points">
+        <td>{{ point.pointCode }}</td>
+        <td>{{ point.pointName }}</td>
+        <td>{{ point.location }}</td>
+        <td>{{ point.deviceType }}</td>
+        <td>{{ point.ipAddress }}</td>
+        <td>
+          <span class="status-cell" [style.backgroundColor]="getStatusColor(point.status)">
+            {{ getStatusText(point.status) }}
+          </span>
+        </td>
+        <td>
+          <button class="edit-btn" (click)="editPoint(point)">编辑</button>
+          <button class="delete-btn" (click)="deletePoint(point.id)">删除</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div *ngIf="points.length === 0" class="empty-state">暂无监控点</div>
+</div>
