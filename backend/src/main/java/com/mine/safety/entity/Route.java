@@ -34,6 +34,12 @@ public class Route {
     
     private String creator;
     
+    private Integer completedCount;
+    
+    private Double avgDurationSeconds;
+    
+    private LocalDateTime lastCompletionTime;
+    
     private LocalDateTime createTime;
     
     private LocalDateTime updateTime;

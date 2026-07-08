@@ -1,9 +1,11 @@
 
 package com.mine.safety.service.impl;
 
+import com.mine.safety.entity.InspectionTask;
 import com.mine.safety.entity.MonitoringPoint;
 import com.mine.safety.entity.Route;
 import com.mine.safety.entity.RoutePoint;
+import com.mine.safety.mapper.InspectionTaskMapper;
 import com.mine.safety.mapper.RouteMapper;
 import com.mine.safety.mapper.RoutePointMapper;
 import com.mine.safety.service.MonitoringPointService;
@@ -24,13 +26,16 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
     private final RouteMapper routeMapper;
     private final RoutePointMapper routePointMapper;
     private final MonitoringPointService monitoringPointService;
+    private final InspectionTaskMapper inspectionTaskMapper;
     
     public RoutePlanningServiceImpl(RouteMapper routeMapper, 
                                      RoutePointMapper routePointMapper,
-                                     MonitoringPointService monitoringPointService) {
+                                     MonitoringPointService monitoringPointService,
+                                     InspectionTaskMapper inspectionTaskMapper) {
         this.routeMapper = routeMapper;
         this.routePointMapper = routePointMapper;
         this.monitoringPointService = monitoringPointService;
+        this.inspectionTaskMapper = inspectionTaskMapper;
     }
     
     @Override
@@ -305,10 +310,22 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
     @Transactional
     public void deleteRoute(Long id) {
         Route route = routeMapper.selectById(id);
-        if (route != null) {
-            routePointMapper.deleteByRouteCode(route.getRouteCode());
-            routeMapper.deleteById(id);
+        if (route == null) {
+            return;
         }
+        
+        com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<InspectionTask> taskWrapper = 
+            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+        taskWrapper.eq(InspectionTask::getRouteId, id);
+        taskWrapper.in(InspectionTask::getStatus, "PENDING", "IN_PROGRESS");
+        
+        long incompleteTaskCount = inspectionTaskMapper.selectCount(taskWrapper);
+        if (incompleteTaskCount > 0) {
+            throw new IllegalStateException("该路线存在未完成的巡检任务，无法删除");
+        }
+        
+        routePointMapper.deleteByRouteCode(route.getRouteCode());
+        routeMapper.deleteById(id);
     }
     
     @Override

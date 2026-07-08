@@ -7,6 +7,8 @@ export class WebSocketService {
   private ws: WebSocket | null = null;
   private shouldReconnect = false;
   private reconnectTimerId: ReturnType<typeof setTimeout> | null = null;
+  private receivedSeqs: Set<number> = new Set();
+  private readonly MAX_SEQ_HISTORY = 1000;
   
   sensorDataReceived = new EventEmitter<SensorData>();
   alarmReceived = new EventEmitter<AlarmRecord>();
@@ -21,7 +23,10 @@ export class WebSocketService {
     }
     
     this.shouldReconnect = true;
-    this.ws = new WebSocket('ws://localhost:8080/ws/safety');
+    this.receivedSeqs.clear();
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    this.ws = new WebSocket(`${protocol}//${host}/ws/safety`);
     
     this.ws.onopen = () => {
       console.log('WebSocket connected');
@@ -30,6 +35,9 @@ export class WebSocketService {
     this.ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
+        if (message.seq !== undefined && this.isDuplicate(message.seq)) {
+          return;
+        }
         switch (message.type) {
           case 'sensorData':
             this.sensorDataReceived.emit(message.data);
@@ -76,5 +84,17 @@ export class WebSocketService {
       this.ws.close();
       this.ws = null;
     }
+  }
+
+  private isDuplicate(seq: number): boolean {
+    if (this.receivedSeqs.has(seq)) {
+      return true;
+    }
+    this.receivedSeqs.add(seq);
+    if (this.receivedSeqs.size > this.MAX_SEQ_HISTORY) {
+      const oldestSeq = Math.min(...this.receivedSeqs);
+      this.receivedSeqs.delete(oldestSeq);
+    }
+    return false;
   }
 }

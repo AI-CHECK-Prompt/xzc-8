@@ -83,14 +83,42 @@ public class InspectionTaskServiceImpl extends ServiceImpl<InspectionTaskMapper,
     public InspectionTask completeTask(Long id) {
         InspectionTask task = baseMapper.selectById(id);
         if (task != null && "IN_PROGRESS".equals(task.getStatus())) {
+            LocalDateTime endTime = LocalDateTime.now();
             task.setStatus("COMPLETED");
-            task.setActualEndTime(LocalDateTime.now());
+            task.setActualEndTime(endTime);
             task.setCompletedPoints(task.getTotalPoints());
             task.setSavedDistance(calculateSavedDistance(id));
-            task.setUpdateTime(LocalDateTime.now());
+            task.setUpdateTime(endTime);
             baseMapper.updateById(task);
+            
+            updateRouteStatistics(task);
         }
         return task;
+    }
+    
+    private void updateRouteStatistics(InspectionTask task) {
+        Route route = routeMapper.selectById(task.getRouteId());
+        if (route == null) {
+            return;
+        }
+        
+        long durationSeconds = 0;
+        if (task.getActualStartTime() != null && task.getActualEndTime() != null) {
+            durationSeconds = java.time.Duration.between(task.getActualStartTime(), task.getActualEndTime()).getSeconds();
+        }
+        
+        int currentCount = route.getCompletedCount() != null ? route.getCompletedCount() : 0;
+        double currentAvg = route.getAvgDurationSeconds() != null ? route.getAvgDurationSeconds() : 0;
+        
+        int newCount = currentCount + 1;
+        double newAvg = (currentAvg * currentCount + durationSeconds) / newCount;
+        
+        route.setCompletedCount(newCount);
+        route.setAvgDurationSeconds(Math.round(newAvg * 100.0) / 100.0);
+        route.setLastCompletionTime(task.getActualEndTime());
+        route.setUpdateTime(LocalDateTime.now());
+        
+        routeMapper.updateById(route);
     }
     
     @Override

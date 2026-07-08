@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class WebSocketServiceImpl implements WebSocketService {
@@ -22,6 +23,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final AtomicLong sequenceCounter = new AtomicLong(0);
     
     public void registerSession(String key, WebSocketSession session) {
         sessions.put(key, session);
@@ -74,6 +76,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
     
     private void broadcast(Map<String, Object> message) throws IOException {
+        message.put("seq", sequenceCounter.incrementAndGet());
         String json = objectMapper.writeValueAsString(message);
         for (WebSocketSession session : sessions.values()) {
             if (session.isOpen()) {

@@ -75,6 +75,9 @@ CREATE TABLE IF NOT EXISTS route (
     status VARCHAR(20) DEFAULT 'ACTIVE',
     description TEXT,
     creator VARCHAR(50),
+    completed_count INT DEFAULT 0,
+    avg_duration_seconds DOUBLE DEFAULT 0,
+    last_completion_time DATETIME,
     create_time DATETIME,
     update_time DATETIME,
     INDEX idx_route_code (route_code)

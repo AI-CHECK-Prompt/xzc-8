@@ -61,7 +61,11 @@ public class RouteController {
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoute(@PathVariable Long id) {
-        routePlanningService.deleteRoute(id);
-        return ResponseEntity.noContent().build();
+        try {
+            routePlanningService.deleteRoute(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).build();
+        }
     }
 }
