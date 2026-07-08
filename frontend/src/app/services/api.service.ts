@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, switchMap, throwError } from 'rxjs';
 
 const BASE_URL = 'http://localhost:8080/api';
 
@@ -218,12 +218,30 @@ export class ApiService {
     return this.http.get<RoutePoint[]>(`${BASE_URL}/route/${routeId}/points`);
   }
 
+  private validatePointCodes(pointCodes: string[]): Observable<string[]> {
+    return this.getPoints().pipe(
+      switchMap(points => {
+        const validCodes = new Set(points.map(p => p.pointCode));
+        const invalidCodes = pointCodes.filter(code => !validCodes.has(code));
+        if (invalidCodes.length > 0) {
+          return throwError(() => new Error(`以下监控点代码不存在: ${invalidCodes.join(', ')}`));
+        }
+        return [pointCodes];
+      })
+    );
+  }
+
   createRoute(routeName: string, pointCodes: string[], startPointCode: string): Observable<Route> {
-    return this.http.post<Route>(`${BASE_URL}/route`, { routeName, pointCodes, startPointCode });
+    const allCodes = [...pointCodes, startPointCode];
+    return this.validatePointCodes(allCodes).pipe(
+      switchMap(() => this.http.post<Route>(`${BASE_URL}/route`, { routeName, pointCodes, startPointCode }))
+    );
   }
 
   updateRoute(id: number, routeName: string, pointCodes: string[]): Observable<Route> {
-    return this.http.put<Route>(`${BASE_URL}/route/${id}`, { routeName, pointCodes });
+    return this.validatePointCodes(pointCodes).pipe(
+      switchMap(() => this.http.put<Route>(`${BASE_URL}/route/${id}`, { routeName, pointCodes }))
+    );
   }
 
   deleteRoute(id: number): Observable<void> {

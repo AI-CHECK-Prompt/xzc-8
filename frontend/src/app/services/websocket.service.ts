@@ -7,7 +7,7 @@ export class WebSocketService {
   private ws: WebSocket | null = null;
   private shouldReconnect = false;
   private reconnectTimerId: ReturnType<typeof setTimeout> | null = null;
-  private receivedSeqs: Set<number> = new Set();
+  private receivedSeqs: Map<number, boolean> = new Map();
   private readonly MAX_SEQ_HISTORY = 1000;
   
   sensorDataReceived = new EventEmitter<SensorData>();
@@ -90,9 +90,9 @@ export class WebSocketService {
     if (this.receivedSeqs.has(seq)) {
       return true;
     }
-    this.receivedSeqs.add(seq);
+    this.receivedSeqs.set(seq, true);
     if (this.receivedSeqs.size > this.MAX_SEQ_HISTORY) {
-      const oldestSeq = Math.min(...this.receivedSeqs);
+      const oldestSeq = this.receivedSeqs.keys().next().value;
       this.receivedSeqs.delete(oldestSeq);
     }
     return false;

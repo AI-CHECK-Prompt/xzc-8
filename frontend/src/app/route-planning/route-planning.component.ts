@@ -57,11 +57,23 @@ export class RoutePlanningComponent implements OnInit {
 
   createRoute() {
     if (this.selectedPoints.length > 0 && this.routeName && this.selectedStartPoint) {
-      this.apiService.createRoute(this.routeName, this.selectedPoints, this.selectedStartPoint).subscribe(() => {
-        this.loadRoutes();
-        this.routeName = '';
-        this.selectedPoints = [];
-        this.selectedStartPoint = '';
+      const validCodes = new Set(this.points.map(p => p.pointCode));
+      const allCodes = [...this.selectedPoints, this.selectedStartPoint];
+      const invalidCodes = allCodes.filter(code => !validCodes.has(code));
+      if (invalidCodes.length > 0) {
+        alert(`以下监控点代码不存在: ${invalidCodes.join(', ')}`);
+        return;
+      }
+      this.apiService.createRoute(this.routeName, this.selectedPoints, this.selectedStartPoint).subscribe({
+        next: () => {
+          this.loadRoutes();
+          this.routeName = '';
+          this.selectedPoints = [];
+          this.selectedStartPoint = '';
+        },
+        error: (err) => {
+          alert('创建路线失败: ' + err.message);
+        }
       });
     }
   }
