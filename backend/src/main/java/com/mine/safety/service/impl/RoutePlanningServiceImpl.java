@@ -278,10 +278,8 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
         }
         
         List<RoutePoint> oldPoints = routePointMapper.selectByRouteCode(route.getRouteCode());
-        Map<String, Integer> oldPointMap = new HashMap<>();
-        for (RoutePoint rp : oldPoints) {
-            oldPointMap.put(rp.getPointCode(), rp.getSequence());
-        }
+        Map<String, RoutePoint> oldPointMap = oldPoints.stream()
+            .collect(Collectors.toMap(RoutePoint::getPointCode, p -> p));
         
         routePointMapper.deleteByRouteCode(route.getRouteCode());
         
@@ -306,6 +304,7 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
         for (int i = 0; i < optimizedOrder.size(); i++) {
             String pointCode = optimizedOrder.get(i);
             MonitoringPoint point = monitoringPointService.getPointByCode(pointCode);
+            RoutePoint original = oldPointMap.get(pointCode);
             
             RoutePoint routePoint = new RoutePoint();
             routePoint.setRouteId(route.getId());
@@ -314,8 +313,15 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
             routePoint.setPointCode(pointCode);
             routePoint.setPointName(point != null ? point.getPointName() : "Unknown");
             routePoint.setSequence(i + 1);
-            routePoint.setInspectionStatus("PENDING");
             routePoint.setCreateTime(LocalDateTime.now());
+            
+            if (original != null) {
+                routePoint.setInspectionStatus(original.getInspectionStatus());
+                routePoint.setActualInspectionTime(original.getActualInspectionTime());
+                routePoint.setInspector(original.getInspector());
+            } else {
+                routePoint.setInspectionStatus("PENDING");
+            }
             
             if (i > 0) {
                 MonitoringPoint prevPoint = monitoringPointService.getPointByCode(optimizedOrder.get(i - 1));
