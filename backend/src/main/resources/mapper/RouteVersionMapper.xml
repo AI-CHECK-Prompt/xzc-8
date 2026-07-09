@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mine.safety.mapper.RouteVersionMapper">
+    
+    <select id="selectByRouteId" resultType="com.mine.safety.entity.RouteVersion">
+        SELECT * FROM route_version WHERE route_id = #{routeId} ORDER BY version_number DESC
+    </select>
+    
+    <select id="selectMaxVersionNumber" resultType="java.lang.Integer">
+        SELECT MAX(version_number) FROM route_version WHERE route_id = #{routeId}
+    </select>
+    
+</mapper>

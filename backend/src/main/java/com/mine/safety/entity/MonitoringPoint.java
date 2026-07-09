@@ -20,11 +20,23 @@ public class MonitoringPoint {
     
     private String location;
     
+    private Double x;
+    
+    private Double y;
+    
     private String deviceType;
     
     private String deviceCode;
     
     private String status;
+    
+    private Integer priority;
+    
+    private LocalDateTime openStartTime;
+    
+    private LocalDateTime openEndTime;
+    
+    private Integer estimatedDwellTime;
     
     private String ipAddress;
     

@@ -1,4 +1,3 @@
-
 package com.mine.safety.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -9,8 +8,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("route_point")
-public class RoutePoint {
+@TableName("route_version")
+public class RouteVersion {
     @TableId(type = IdType.AUTO)
     private Long id;
     
@@ -18,23 +17,23 @@ public class RoutePoint {
     
     private String routeCode;
     
-    private Long pointId;
+    private Integer versionNumber;
     
-    private String pointCode;
+    private String changeReason;
     
-    private String pointName;
+    private String changeType;
     
-    private Integer sequence;
+    private Integer totalPoints;
     
-    private Double distanceFromPrev;
+    private Double totalDistance;
     
-    private Double cumulativeDistance;
+    private Integer estimatedTime;
     
-    private String inspectionStatus;
+    private String operator;
     
-    private LocalDateTime actualInspectionTime;
+    private String beforeSnapshot;
     
-    private String inspector;
+    private String afterSnapshot;
     
     private LocalDateTime createTime;
 }

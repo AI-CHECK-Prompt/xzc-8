@@ -10,9 +10,15 @@ export interface MonitoringPoint {
   pointCode: string;
   pointName: string;
   location: string;
+  x: number;
+  y: number;
   deviceType: string;
   deviceCode: string;
   status: string;
+  priority: number;
+  openStartTime: string;
+  openEndTime: string;
+  estimatedDwellTime: number;
   ipAddress: string;
   port: number;
   description: string;
@@ -89,6 +95,9 @@ export interface RoutePoint {
   sequence: number;
   distanceFromPrev: number;
   cumulativeDistance: number;
+  inspectionStatus: string;
+  actualInspectionTime: string;
+  inspector: string;
   createTime: string;
 }
 
@@ -120,6 +129,35 @@ export interface TaskStatistics {
   pendingTasks: number;
   totalSavedDistance: number;
   avgSavedDistance: number;
+}
+
+export interface RouteVersion {
+  id: number;
+  routeId: number;
+  routeCode: string;
+  versionNumber: number;
+  changeReason: string;
+  changeType: string;
+  totalPoints: number;
+  totalDistance: number;
+  estimatedTime: number;
+  operator: string;
+  beforeSnapshot: string;
+  afterSnapshot: string;
+  createTime: string;
+}
+
+export interface RouteChangeLog {
+  id: number;
+  versionId: number;
+  routeId: number;
+  pointCode: string;
+  pointName: string;
+  changeType: string;
+  oldSequence: number;
+  newSequence: number;
+  operator: string;
+  createTime: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -246,6 +284,46 @@ export class ApiService {
 
   deleteRoute(id: number): Observable<void> {
     return this.http.delete<void>(`${BASE_URL}/route/${id}`);
+  }
+
+  recalculateRoute(id: number, reason: string, addPointCodes: string[] = [], removePointCodes: string[] = [], statusChangePointCodes: string[] = []): Observable<Route> {
+    return this.http.post<Route>(`${BASE_URL}/route/${id}/recalculate`, { reason, addPointCodes, removePointCodes, statusChangePointCodes });
+  }
+
+  generateRecommendedRoute(id: number, currentLocationCode?: string, currentX?: number, currentY?: number): Observable<Route> {
+    return this.http.post<Route>(`${BASE_URL}/route/${id}/recommend`, { currentLocationCode, currentX, currentY });
+  }
+
+  getRouteVersions(id: number): Observable<RouteVersion[]> {
+    return this.http.get<RouteVersion[]>(`${BASE_URL}/route/${id}/versions`);
+  }
+
+  getRouteVersionById(versionId: number): Observable<RouteVersion> {
+    return this.http.get<RouteVersion>(`${BASE_URL}/route/version/${versionId}`);
+  }
+
+  getVersionChangeLogs(versionId: number): Observable<RouteChangeLog[]> {
+    return this.http.get<RouteChangeLog[]>(`${BASE_URL}/route/version/${versionId}/changelog`);
+  }
+
+  compareVersions(id: number, version1: number, version2: number): Observable<Map<string, any>> {
+    return this.http.get<Map<string, any>>(`${BASE_URL}/route/${id}/versions/compare?version1=${version1}&version2=${version2}`);
+  }
+
+  acceptRecommendedRoute(id: number, recommendedVersionId: number): Observable<Route> {
+    return this.http.post<Route>(`${BASE_URL}/route/${id}/accept-recommend`, { recommendedVersionId });
+  }
+
+  assignPointsToInspectors(id: number, inspectors: string[]): Observable<string[]> {
+    return this.http.post<string[]>(`${BASE_URL}/route/${id}/assign-inspectors`, { inspectors });
+  }
+
+  updatePointInspectionStatus(id: number, pointCode: string, status: string, inspector?: string): Observable<void> {
+    return this.http.put<void>(`${BASE_URL}/route/${id}/point-status`, { pointCode, status, inspector });
+  }
+
+  reorderRoutePoints(id: number, pointCodes: string[]): Observable<Route> {
+    return this.http.put<Route>(`${BASE_URL}/route/${id}/reorder`, { pointCodes });
   }
 
   getTasks(): Observable<InspectionTask[]> {

@@ -1,4 +1,3 @@
-
 <div class="route-planning">
   <h2>巡检路线规划</h2>
   
@@ -24,6 +23,9 @@
              (click)="togglePoint(point.pointCode)">
           <span>{{ point.pointName }}</span>
           <span class="point-code">{{ point.pointCode }}</span>
+          <span class="priority-badge" [style.backgroundColor]="getPriorityColor(point.priority)">
+            {{ getPriorityText(point.priority) }}
+          </span>
         </div>
       </div>
     </div>
@@ -41,6 +43,9 @@
            (click)="selectRoute(route)">
         <div class="route-header">
           <span class="route-name">{{ route.routeName }}</span>
+          <span class="route-status" [class.recommended]="route.status === 'RECOMMENDED'">
+            {{ route.status === 'RECOMMENDED' ? '推荐' : '' }}
+          </span>
           <button class="delete-btn" (click)="$event.stopPropagation(); deleteRoute(route.id)">删除</button>
         </div>
         <div class="route-info">
@@ -53,6 +58,13 @@
   </div>
   
   <div *ngIf="selectedRoute" class="section">
+    <div class="route-actions">
+      <button class="action-btn" (click)="generateRecommendedRoute()">生成推荐路线</button>
+      <button class="action-btn" (click)="showVersionHistory = !showVersionHistory">
+        {{ showVersionHistory ? '隐藏版本历史' : '查看版本历史' }}
+      </button>
+    </div>
+    
     <h3>{{ selectedRoute.routeName }} - 路线详情</h3>
     <div class="route-detail">
       <div class="route-stats">
@@ -75,15 +87,52 @@
       </div>
       
       <div class="route-points">
-        <h4>巡检顺序</h4>
-        <div *ngFor="let point of routePoints" class="route-point-item">
+        <h4>巡检顺序（拖拽调整）</h4>
+        <div *ngFor="let point of routePoints; let i = index" 
+             class="route-point-item"
+             [class.completed]="point.inspectionStatus === 'COMPLETED'"
+             [class.drag-over]="dragOverIndex === i"
+             draggable="true"
+             (dragstart)="onDragStart(point, $event)"
+             (dragover)="onDragOver(i, $event)"
+             (drop)="onDrop(i, $event)"
+             (dragend)="onDragEnd()">
           <span class="sequence">{{ point.sequence }}</span>
           <div class="point-info">
             <span class="point-name">{{ point.pointName }}</span>
             <span class="distance">距前: {{ point.distanceFromPrev ? point.distanceFromPrev.toFixed(1) : 0 }}m</span>
           </div>
           <span class="cumulative">累计: {{ point.cumulativeDistance.toFixed(1) }}m</span>
+          <span class="status-badge" [style.backgroundColor]="getPointStatusColor(point.inspectionStatus)">
+            {{ getPointStatusText(point.inspectionStatus) }}
+          </span>
+          <select class="status-select" [(ngModel)]="point.inspectionStatus" (change)="updatePointStatus(point.pointCode, point.inspectionStatus)">
+            <option value="PENDING">待巡检</option>
+            <option value="COMPLETED">已完成</option>
+            <option value="SKIPPED">已跳过</option>
+          </select>
+          <span class="inspector">{{ point.inspector || '-' }}</span>
         </div>
+      </div>
+      
+      <div class="recalculate-section">
+        <h4>重新计算路线</h4>
+        <div class="form-row">
+          <input type="text" [(ngModel)]="recalculateReason" placeholder="重新计算原因">
+        </div>
+        <div class="form-row">
+          <input type="text" [(ngModel)]="addPointCodes" placeholder="新增监控点（逗号分隔）">
+          <input type="text" [(ngModel)]="removePointCodes" placeholder="移除监控点（逗号分隔）">
+        </div>
+        <button class="task-btn" (click)="recalculateRoute()" [disabled]="!recalculateReason">重新计算</button>
+      </div>
+      
+      <div class="assign-section">
+        <h4>分配巡检人员</h4>
+        <div class="form-row">
+          <input type="text" [(ngModel)]="assignInspectors" placeholder="巡检人员（逗号分隔）">
+        </div>
+        <button class="task-btn" (click)="assignInspectorsToRoute()" [disabled]="!assignInspectors.trim()">分配</button>
       </div>
       
       <div class="create-task">
@@ -95,6 +144,72 @@
         </div>
         <button class="task-btn" (click)="createTask()" [disabled]="!newTaskAssignee">创建任务</button>
       </div>
+    </div>
+  </div>
+  
+  <div *ngIf="showRecommendedRoute && recommendedRoute" class="section recommended-route">
+    <h3>推荐路线</h3>
+    <div class="recommended-header">
+      <span>{{ recommendedRoute.routeName }}</span>
+      <button class="accept-btn" (click)="acceptRecommendedRoute()">采纳</button>
+      <button class="reject-btn" (click)="rejectRecommendedRoute()">拒绝</button>
+    </div>
+    <div class="route-points">
+      <div *ngFor="let point of recommendedRoutePoints" class="route-point-item">
+        <span class="sequence">{{ point.sequence }}</span>
+        <div class="point-info">
+          <span class="point-name">{{ point.pointName }}</span>
+          <span class="distance">距前: {{ point.distanceFromPrev ? point.distanceFromPrev.toFixed(1) : 0 }}m</span>
+        </div>
+        <span class="cumulative">累计: {{ point.cumulativeDistance.toFixed(1) }}m</span>
+        <span class="status-badge" [style.backgroundColor]="getPointStatusColor(point.inspectionStatus)">
+          {{ getPointStatusText(point.inspectionStatus) }}
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="showVersionHistory && selectedRoute" class="section version-history">
+    <h3>版本历史</h3>
+    <div class="version-list">
+      <div *ngFor="let version of versions" 
+           class="version-item"
+           [class.selected]="selectedVersion?.id === version.id"
+           (click)="selectVersion(version)">
+        <div class="version-header">
+          <span class="version-number">v{{ version.versionNumber }}</span>
+          <span class="version-time">{{ version.createTime }}</span>
+        </div>
+        <div class="version-info">
+          <span>原因: {{ version.changeReason }}</span>
+          <span>类型: {{ version.changeType }}</span>
+          <span>点数: {{ version.totalPoints }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="selectedVersion" class="change-logs">
+      <h4>变更日志</h4>
+      <table class="changelog-table">
+        <thead>
+          <tr>
+            <th>监控点</th>
+            <th>变更类型</th>
+            <th>原顺序</th>
+            <th>新顺序</th>
+            <th>操作人</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of changeLogs">
+            <td>{{ log.pointName }} ({{ log.pointCode }})</td>
+            <td>{{ log.changeType }}</td>
+            <td>{{ log.oldSequence }}</td>
+            <td>{{ log.newSequence }}</td>
+            <td>{{ log.operator }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
   
