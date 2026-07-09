@@ -188,6 +188,30 @@ export class RoutePlanningComponent implements OnInit {
     }
   }
 
+  getChangeTypeText(type: string): string {
+    switch (type) {
+      case 'ADDED': return '新增';
+      case 'REMOVED': return '删除';
+      case 'REORDERED': return '顺序调整';
+      case 'UNCHANGED': return '无变化';
+      case 'CREATE': return '创建';
+      case 'RECALCULATE': return '重新计算';
+      case 'MANUAL_REORDER': return '手动调整';
+      case 'ACCEPT_RECOMMEND': return '采纳推荐';
+      default: return type;
+    }
+  }
+
+  getChangeTypeColor(type: string): string {
+    switch (type) {
+      case 'ADDED': return '#22c55e';
+      case 'REMOVED': return '#ef4444';
+      case 'REORDERED': return '#f59e0b';
+      case 'UNCHANGED': return '#9ca3af';
+      default: return '#6b7280';
+    }
+  }
+
   generateRecommendedRoute() {
     if (!this.selectedRoute) return;
     this.apiService.generateRecommendedRoute(this.selectedRoute.id).subscribe({

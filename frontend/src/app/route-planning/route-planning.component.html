@@ -203,9 +203,9 @@
         <tbody>
           <tr *ngFor="let log of changeLogs">
             <td>{{ log.pointName }} ({{ log.pointCode }})</td>
-            <td>{{ log.changeType }}</td>
-            <td>{{ log.oldSequence }}</td>
-            <td>{{ log.newSequence }}</td>
+            <td><span class="change-type-badge" [style.backgroundColor]="getChangeTypeColor(log.changeType)">{{ getChangeTypeText(log.changeType) }}</span></td>
+            <td>{{ log.oldSequence || '-' }}</td>
+            <td>{{ log.newSequence || '-' }}</td>
             <td>{{ log.operator }}</td>
           </tr>
         </tbody>

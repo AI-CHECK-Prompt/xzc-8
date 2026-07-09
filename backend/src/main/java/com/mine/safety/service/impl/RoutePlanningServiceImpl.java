@@ -878,18 +878,63 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
         
         routeVersionMapper.insert(version);
         
+        List<String> beforePointCodes = new ArrayList<>();
+        if (beforeSnapshot != null) {
+            try {
+                beforePointCodes = objectMapper.readValue(beforeSnapshot, List.class);
+            } catch (JsonProcessingException e) {
+                logger.error("解析变更前快照失败", e);
+            }
+        }
+        
+        Map<String, RoutePoint> currentPointMap = new HashMap<>();
         List<RoutePoint> allPoints = routePointMapper.selectByRouteCode(route.getRouteCode());
         for (RoutePoint rp : allPoints) {
+            currentPointMap.put(rp.getPointCode(), rp);
+        }
+        
+        for (int i = 0; i < beforePointCodes.size(); i++) {
+            String pointCode = beforePointCodes.get(i);
+            if (!currentPointMap.containsKey(pointCode)) {
+                MonitoringPoint mp = monitoringPointService.getPointByCode(pointCode);
+                RouteChangeLog log = new RouteChangeLog();
+                log.setVersionId(version.getId());
+                log.setRouteId(route.getId());
+                log.setPointCode(pointCode);
+                log.setPointName(mp != null ? mp.getPointName() : pointCode);
+                log.setChangeType("REMOVED");
+                log.setOldSequence(i + 1);
+                log.setNewSequence(null);
+                log.setOperator(operator);
+                log.setCreateTime(LocalDateTime.now());
+                routeChangeLogMapper.insert(log);
+            }
+        }
+        
+        for (RoutePoint rp : allPoints) {
+            int oldIndex = beforePointCodes.indexOf(rp.getPointCode());
             RouteChangeLog log = new RouteChangeLog();
             log.setVersionId(version.getId());
             log.setRouteId(route.getId());
             log.setPointCode(rp.getPointCode());
             log.setPointName(rp.getPointName());
-            log.setChangeType(changeType);
-            log.setOldSequence(rp.getSequence());
-            log.setNewSequence(rp.getSequence());
             log.setOperator(operator);
             log.setCreateTime(LocalDateTime.now());
+            
+            if (oldIndex < 0) {
+                log.setChangeType("ADDED");
+                log.setOldSequence(null);
+                log.setNewSequence(rp.getSequence());
+            } else if (oldIndex + 1 != rp.getSequence()) {
+                log.setChangeType("REORDERED");
+                log.setOldSequence(oldIndex + 1);
+                log.setNewSequence(rp.getSequence());
+            } else {
+                log.setChangeType("UNCHANGED");
+                log.setOldSequence(rp.getSequence());
+                log.setNewSequence(rp.getSequence());
+            }
+            
             routeChangeLogMapper.insert(log);
         }
     }
