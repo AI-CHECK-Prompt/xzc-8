@@ -12,4 +12,8 @@ public interface RouteVersionMapper extends BaseMapper<RouteVersion> {
     List<RouteVersion> selectByRouteId(@Param("routeId") Long routeId);
     
     Integer selectMaxVersionNumber(@Param("routeId") Long routeId);
+    
+    List<RouteVersion> selectByRouteIdAndVersionRange(@Param("routeId") Long routeId, 
+                                                      @Param("minVersion") Integer minVersion, 
+                                                      @Param("maxVersion") Integer maxVersion);
 }

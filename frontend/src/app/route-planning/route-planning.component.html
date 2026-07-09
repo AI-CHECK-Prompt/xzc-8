@@ -63,6 +63,9 @@
       <button class="action-btn" (click)="showVersionHistory = !showVersionHistory">
         {{ showVersionHistory ? '隐藏版本历史' : '查看版本历史' }}
       </button>
+      <button *ngIf="showVersionHistory && versions.length >= 2" class="action-btn" (click)="toggleComparePanel()">
+        {{ showComparePanel ? '隐藏版本对比' : '版本对比' }}
+      </button>
     </div>
     
     <h3>{{ selectedRoute.routeName }} - 路线详情</h3>
@@ -210,6 +213,72 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div *ngIf="showComparePanel" class="compare-panel">
+      <h4>版本对比</h4>
+      <div class="compare-selector">
+        <label>起始版本:</label>
+        <select [(ngModel)]="compareVersion1">
+          <option *ngFor="let v of versions" [value]="v.versionNumber">v{{ v.versionNumber }}</option>
+        </select>
+        <span class="compare-arrow">→</span>
+        <label>目标版本:</label>
+        <select [(ngModel)]="compareVersion2">
+          <option *ngFor="let v of versions" [value]="v.versionNumber">v{{ v.versionNumber }}</option>
+        </select>
+        <button class="compare-btn" (click)="compareVersions()">对比</button>
+      </div>
+      
+      <div *ngIf="compareResult" class="compare-result">
+        <div class="compare-summary">
+          <span class="compare-range">{{ compareResult.compareRange }}</span>
+          <span class="change-count">共计 {{ compareResult.changeCount }} 项增量变更</span>
+        </div>
+        
+        <div class="compare-details">
+          <div *ngIf="compareResult.addedPoints?.length > 0" class="compare-item added">
+            <span class="compare-label">新增监控点:</span>
+            <span>{{ compareResult.addedPoints.join(', ') }}</span>
+          </div>
+          <div *ngIf="compareResult.removedPoints?.length > 0" class="compare-item removed">
+            <span class="compare-label">删除监控点:</span>
+            <span>{{ compareResult.removedPoints.join(', ') }}</span>
+          </div>
+          <div *ngIf="compareResult.positionChanges && Object.keys(compareResult.positionChanges).length > 0" class="compare-item reordered">
+            <span class="compare-label">顺序调整:</span>
+            <span *ngFor="let item of getPositionChangeItems()">
+              {{ item.code }} ({{ item.oldIndex + 1 }} → 新位置)
+            </span>
+          </div>
+        </div>
+        
+        <div *ngIf="compareResult.changes?.length > 0" class="compare-changelog">
+          <h5>详细变更记录</h5>
+          <table class="changelog-table">
+            <thead>
+              <tr>
+                <th>版本</th>
+                <th>监控点</th>
+                <th>变更类型</th>
+                <th>原顺序</th>
+                <th>新顺序</th>
+                <th>操作人</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of compareResult.changes">
+                <td>v{{ getVersionNumber(log.versionId) }}</td>
+                <td>{{ log.pointName }} ({{ log.pointCode }})</td>
+                <td><span class="change-type-badge" [style.backgroundColor]="getChangeTypeColor(log.changeType)">{{ getChangeTypeText(log.changeType) }}</span></td>
+                <td>{{ log.oldSequence || '-' }}</td>
+                <td>{{ log.newSequence || '-' }}</td>
+                <td>{{ log.operator }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
   

@@ -12,4 +12,6 @@ public interface RouteChangeLogMapper extends BaseMapper<RouteChangeLog> {
     List<RouteChangeLog> selectByVersionId(@Param("versionId") Long versionId);
     
     List<RouteChangeLog> selectByRouteId(@Param("routeId") Long routeId);
+    
+    List<RouteChangeLog> selectByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

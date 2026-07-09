@@ -613,29 +613,43 @@ public class RoutePlanningServiceImpl implements RoutePlanningService {
     public Map<String, Object> compareVersions(Long routeId, Integer version1, Integer version2) {
         Map<String, Object> result = new HashMap<>();
         
+        Integer sourceVersion = Math.min(version1, version2);
+        Integer targetVersion = Math.max(version1, version2);
+        
         RouteVersion v1 = routeVersionMapper.selectOne(
             new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<RouteVersion>()
                 .eq(RouteVersion::getRouteId, routeId)
-                .eq(RouteVersion::getVersionNumber, version1));
+                .eq(RouteVersion::getVersionNumber, sourceVersion));
         
         RouteVersion v2 = routeVersionMapper.selectOne(
             new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<RouteVersion>()
                 .eq(RouteVersion::getRouteId, routeId)
-                .eq(RouteVersion::getVersionNumber, version2));
+                .eq(RouteVersion::getVersionNumber, targetVersion));
         
         result.put("version1", v1);
         result.put("version2", v2);
         
         if (v1 != null && v2 != null) {
-            List<RouteChangeLog> logs = routeChangeLogMapper.selectByRouteId(routeId);
-            List<RouteChangeLog> relevantLogs = logs.stream()
-                .filter(log -> log.getVersionId().equals(v2.getId()))
+            List<RouteVersion> versionsInRange = routeVersionMapper.selectByRouteIdAndVersionRange(
+                routeId, sourceVersion, targetVersion);
+            
+            List<Long> versionIds = versionsInRange.stream()
+                .map(RouteVersion::getId)
                 .collect(Collectors.toList());
+            
+            List<RouteChangeLog> relevantLogs = versionIds.isEmpty() 
+                ? new ArrayList<>() 
+                : routeChangeLogMapper.selectByVersionIds(versionIds).stream()
+                    .filter(log -> !"UNCHANGED".equals(log.getChangeType()))
+                    .collect(Collectors.toList());
+            
             result.put("changes", relevantLogs);
+            result.put("changeCount", relevantLogs.size());
+            result.put("compareRange", String.format("V%d → V%d", sourceVersion, targetVersion));
             
             try {
-                List<String> beforeOrder = v1.getBeforeSnapshot() != null 
-                    ? objectMapper.readValue(v1.getBeforeSnapshot(), List.class) : new ArrayList<>();
+                List<String> beforeOrder = v1.getAfterSnapshot() != null 
+                    ? objectMapper.readValue(v1.getAfterSnapshot(), List.class) : new ArrayList<>();
                 List<String> afterOrder = v2.getAfterSnapshot() != null 
                     ? objectMapper.readValue(v2.getAfterSnapshot(), List.class) : new ArrayList<>();
                 

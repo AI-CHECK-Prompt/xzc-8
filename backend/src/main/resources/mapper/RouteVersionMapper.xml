@@ -10,4 +10,12 @@
         SELECT MAX(version_number) FROM route_version WHERE route_id = #{routeId}
     </select>
     
+    <select id="selectByRouteIdAndVersionRange" resultType="com.mine.safety.entity.RouteVersion">
+        SELECT * FROM route_version 
+        WHERE route_id = #{routeId} 
+        AND version_number > #{minVersion} 
+        AND version_number <= #{maxVersion}
+        ORDER BY version_number ASC
+    </select>
+    
 </mapper>

@@ -25,6 +25,10 @@ export class RoutePlanningComponent implements OnInit {
   recommendedRoutePoints: RoutePoint[] = [];
   showVersionHistory: boolean = false;
   showRecommendedRoute: boolean = false;
+  showComparePanel: boolean = false;
+  compareVersion1: number | null = null;
+  compareVersion2: number | null = null;
+  compareResult: Map<string, any> | null = null;
   recalculateReason: string = '';
   addPointCodes: string[] = [];
   removePointCodes: string[] = [];
@@ -111,6 +115,29 @@ export class RoutePlanningComponent implements OnInit {
     this.selectedVersion = version;
     this.apiService.getVersionChangeLogs(version.id).subscribe(logs => {
       this.changeLogs = logs;
+    });
+  }
+
+  toggleComparePanel() {
+    this.showComparePanel = !this.showComparePanel;
+    if (this.showComparePanel && this.versions.length >= 2) {
+      this.compareVersion1 = this.versions[this.versions.length - 1]?.versionNumber || null;
+      this.compareVersion2 = this.versions[this.versions.length - 2]?.versionNumber || null;
+    }
+  }
+
+  compareVersions() {
+    if (!this.selectedRoute || this.compareVersion1 === null || this.compareVersion2 === null) {
+      alert('请选择两个版本进行对比');
+      return;
+    }
+    this.apiService.compareVersions(this.selectedRoute.id, this.compareVersion1, this.compareVersion2).subscribe({
+      next: (result) => {
+        this.compareResult = result;
+      },
+      error: (err) => {
+        alert('版本对比失败: ' + err.message);
+      }
     });
   }
 
@@ -393,5 +420,18 @@ export class RoutePlanningComponent implements OnInit {
       case 5: return '#999';
       default: return '#999';
     }
+  }
+
+  getVersionNumber(versionId: number): number {
+    const version = this.versions.find(v => v.id === versionId);
+    return version?.versionNumber || 0;
+  }
+
+  getPositionChangeItems(): {code: string, oldIndex: number}[] {
+    if (!this.compareResult?.positionChanges) return [];
+    return Object.entries(this.compareResult.positionChanges).map(([code, oldIndex]) => ({
+      code,
+      oldIndex: oldIndex as number
+    }));
   }
 }
